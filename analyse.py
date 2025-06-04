@@ -1,74 +1,61 @@
-from datetime import datetime
+# analyse.py
+import sqlite3
+from typing import List
+import db as database_module  # Renamed import
+from counter import Counter, get_counter  # Import Counter class and the helper
 
-from db import fetch_all_habit_names
 
-def compute_longest_streak(db, habit_name):
-    """
-    Calculates the longest consecutive streak of completions for a specific habit.
+def list_all_habits_details(db_conn: sqlite3.Connection) -> List[Counter]:
+    """Returns a list of Counter objects for all habits, with streaks calculated."""
+    habit_names = database_module.get_habits_list(db_conn)
+    detailed_habits = []
+    for name in habit_names:
+        counter_obj = get_counter(db_conn, name)
+        if counter_obj:
+            # Streaks will be calculated when __str__ is called or explicitly by get_X_streak
+            detailed_habits.append(counter_obj)
+    return detailed_habits
 
-    Args:
-      db: The database connection.
-      habit_name: The name of the habit.
 
-    Returns:
-      int: The length of the longest streak.
-    """
+def list_habits_by_periodicity_details(db_conn: sqlite3.Connection, periodicity: str) -> List[Counter]:
+    """Returns a list of Counter objects for habits of a given periodicity."""
+    habit_names = database_module.habit_by_periodicity(db_conn, periodicity)
+    detailed_habits = []
+    for name in habit_names:
+        counter_obj = get_counter(db_conn, name)
+        if counter_obj:
+            detailed_habits.append(counter_obj)
+    return detailed_habits
 
-    print('The habit is: ', habit_name)
-    cursor = db.cursor()
-    cursor.execute('''
-        SELECT tracked_at 
-        FROM progress_log
-        INNER JOIN habits ON progress_log.habit_id = habits.id
-        WHERE habits.name = ?
-        ORDER BY tracked_at ASC
-    ''', (habit_name,))
-    completion_dates = cursor.fetchall()
 
-    if not completion_dates:
+def longest_streak_all_habits(db_conn: sqlite3.Connection) -> int:
+    """Calculates the longest streak among all habits."""
+    all_habit_names = database_module.get_habits_list(db_conn)
+    if not all_habit_names:
         return 0
 
-    # Ensure the dates are sorted chronologically
-    dates = [
-        datetime.strptime(date[0], "%Y-%m-%d %H:%M:%S")
-        for date in completion_dates
-    ]
+    max_overall_streak = 0
+    for name in all_habit_names:
+        counter = get_counter(db_conn, name)
+        if counter:
+            # Pass db_conn so that get_longest_streak can load fresh data
+            max_overall_streak = max(max_overall_streak, counter.get_longest_streak(db_conn=db_conn))
+    return max_overall_streak
 
-    max_streak = 1
-    current_streak = 1
 
-    # Ensure the dates are sorted chronologically (this might already be done in your code)
-    dates.sort()
+def calculate_longest_streak_for_habit(db_conn: sqlite3.Connection, name: str) -> int:
+    """Calculates the longest streak for a specific habit by name."""
+    counter = get_counter(db_conn, name)
+    if counter:
+        # Pass db_conn so that get_longest_streak can load fresh data
+        return counter.get_longest_streak(db_conn=db_conn)
+    return 0
 
-    for i in range(0, len(dates)-1):
-        if (dates[i+1] - dates[i]).days == 1:  # Increment only for exact one-day difference
-            current_streak += 1
-            print('The current streak is: ', current_streak)
-        elif (dates[i+1] - dates[i]).days > 1:  # Reset only for gaps greater than one day
-            max_streak = max(max_streak, current_streak)
-            current_streak = 1
-        # No need for an else block for same-day entries
 
-    # Update max_streak one last time after the loop
-    longest_streak = max(max_streak, current_streak)
-    return longest_streak
-
-def compute_longest_streak_overall(db):
-    """
-    Calculates the longest streak across all habits in the database.
-
-    Args:
-      db: The database connection.
-
-    Returns:
-      int: The length of the longest streak among all habits.
-    """
-
-    all_habits = fetch_all_habit_names(db)
-    longest_streak = 0
-    for habit in all_habits:
-        habit_streak = compute_longest_streak (db, habit)
-        if habit_streak > longest_streak:
-            longest_streak = habit_streak
-
-    return longest_streak
+def calculate_current_streak_for_habit(db_conn: sqlite3.Connection, name: str) -> int:
+    """Calculates the current streak for a specific habit by name."""
+    counter = get_counter(db_conn, name)
+    if counter:
+        # Pass db_conn so that get_current_streak can load fresh data
+        return counter.get_current_streak(db_conn=db_conn)
+    return 0
