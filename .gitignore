@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual Environment
+.venv/
+venv/
+
+# IDE settings
+.idea/
+
+# Database and Log files
+data/
+logs/
+
+# Distribution / packaging
+.eggs/
+*.egg-info/
+dist/
+build/
