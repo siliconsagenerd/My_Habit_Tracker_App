@@ -1,7 +1,6 @@
 # Habit Tracking Application
 
-**Course:** Object-Oriented and Functional Programming with Python.
-
+**Course:** Object-Oriented and Functional Programming with Python
 **Institution:** IU International University of Applied Sciences
 
 ---
@@ -16,24 +15,24 @@ The application adheres to object-oriented principles for habit representation (
 
 ## 2. Core Features
 
-* **Interactive CLI**: User-friendly navigation using arrow keys and prompts via `questionary`. [cite: 1]
+* **Interactive CLI**: User-friendly navigation using arrow keys and prompts via `questionary`.
 * **Habit Management**:
-    * Create new habits with a name, description, and periodicity (Daily or Weekly). [cite: 1]
-    * Log habit completions ("Increment Habit"). [cite: 1]
-    * Reset all completion data for a specific habit. [cite: 1]
-    * Delete habits permanently from the database. [cite: 1]
+    * Create new habits with a name, description, and periodicity (Daily or Weekly).
+    * Log habit completions ("Increment Habit").
+    * Reset all completion data for a specific habit.
+    * Delete habits permanently from the database.
 * **Streak Tracking**:
     * Automatic calculation of current and historically longest streaks for each habit.
     * Streaks are based on consecutive periods of completion (days for Daily habits, weeks for Weekly habits).
 * **Data Persistence**:
     * All habit definitions and completion timestamps are stored in a local SQLite database (`data/user_habits.db`).
 * **Habit Analysis**:
-    * List all currently tracked habits with their streak information. [cite: 1]
-    * Filter and display habits based on their periodicity (Daily/Weekly). [cite: 1]
-    * View the longest streak achieved across all habits. [cite: 1]
+    * List all currently tracked habits with their streak information.
+    * Filter and display habits based on their periodicity (Daily/Weekly).
+    * View the longest streak achieved across all habits.
     * View the longest and current streak for any specific habit.
 * **Predefined Data**:
-    * Includes a script (`preload_db.py`) to populate the database with 5 example habits and 4 weeks of sample completion data for demonstration and testing. [cite: 1]
+    * Includes a script (`preload_db.py`) to populate the database with 5 example habits and 4 weeks of sample completion data for demonstration and testing.
 
 ---
 
@@ -60,11 +59,10 @@ Follow these steps to get the application running on your local machine:
 **Steps:**
 
 1.  **Download or Clone the Project:**
-    * If obtained as a ZIP file, extract it to your preferred directory.
-    * Alternatively, clone from the Git repository (if applicable):
+    * Clone the repository from GitHub using the following commands:
         ```bash
-        git clone <your_repository_url>
-        cd <project_directory_name>
+        git clone [https://github.com/siliconsagenerd/My_Habit_Tracker_App](https://github.com/siliconsagenerd/My_Habit_Tracker_App)
+        cd My_Habit_Tracker_App
         ```
 
 2.  **Set Up a Virtual Environment** (Recommended for isolating project dependencies):
@@ -86,7 +84,7 @@ Follow these steps to get the application running on your local machine:
     ```bash
     python preload_db.py
     ```
-    *This step is crucial for initial setup and to have sample data available for testing and demonstration.* [cite: 1]
+    *This step is crucial for initial setup and to have sample data available for testing and demonstration.*
 
 ---
 
@@ -101,45 +99,32 @@ After successful installation and database preloading, start the application:
     ```
 
 2.  **Navigating the CLI:**
-    The application will launch an interactive menu. Use the **arrow keys** to highlight an option and **Enter** to select it. [cite: 1]
+    The application will launch an interactive menu. Use the **arrow keys** to highlight an option and **Enter** to select it.
 
-    * **Create a New Habit**:
-        * Select "Create a New Habit". [cite: 1]
-        * Follow prompts to enter the habit's name, a brief description, and choose its periodicity (Daily/Weekly). [cite: 1]
-    * **Increment Habit (Log Completion)**:
-        * Select "Increment Habit". [cite: 1]
-        * Choose the habit you've completed. This records a completion for the current time and updates streak calculations. [cite: 1]
-    * **Reset Habit**:
-        * Select "Reset Habit". [cite: 1]
-        * Choose a habit to clear all its recorded completions. This will reset its streaks to zero. [cite: 1]
-    * **Analyse Habits**:
-        * Select "Analyse Habits". [cite: 1]
-        * A sub-menu provides various analysis options, including listing habits, filtering by periodicity, and viewing specific streak data. [cite: 1]
-    * **Delete Habit**:
-        * Select "Delete Habit". [cite: 1]
-        * Choose a habit to remove it and all its associated data from the database. [cite: 1]
-    * **Exit**:
-        * Select "Exit" to close the application. [cite: 1]
+    * **Create a New Habit**: Follow prompts to enter the habit's name, a brief description, and choose its periodicity (Daily/Weekly).
+    * **Increment Habit (Log Completion)**: Choose a habit you've completed. This records a completion for the current time and updates streak calculations.
+    * **Reset Habit**: Choose a habit to clear all its recorded completions. This will reset its streaks to zero.
+    * **Analyse Habits**: A sub-menu provides various analysis options, including listing habits, filtering by periodicity, and viewing specific streak data.
+    * **Delete Habit**: Choose a habit to remove it and all its associated data from the database.
+    * **Exit**: Close the application.
 
 ---
 
 ## 6. Predefined Example Habits
 
-The `preload_db.py` script populates the database with the following example habits to showcase functionality: [cite: 1]
+The `preload_db.py` script populates the database with the following example habits to showcase functionality:
 
-* Study Daily (Daily) [cite: 1]
-* Read Daily (Daily) [cite: 1]
+* Study Daily (Daily)
+* Read Daily (Daily)
 * Daily Workout (Daily)
-* Weekly Project Review (Weekly) [cite: 1]
+* Weekly Project Review (Weekly)
 * Grocery Shopping (Weekly)
-
-*(Note: The exact names and types loaded by your `preload_db.py` from the last code iteration were "Study Daily", "Read Daily", "Daily Workout", "Weekly Project Review", "Plan Week Ahead" - adjust this list if your `preload_db.py` uses different names like "gaming" or "laundry" as per your original README. The example above is from the last code I provided.)*
 
 ---
 
 ## 7. Testing the Application
 
-Automated unit tests are provided to ensure the reliability of core functionalities, especially habit creation, incrementing, and streak calculations. The tests utilize the `pytest` framework and `freezegun` for consistent time-based testing.
+Automated unit tests are provided to ensure the reliability of core functionalities. The tests utilize the `pytest` framework and `freezegun` for consistent time-based testing.
 
 **Running Tests:**
 
@@ -152,7 +137,7 @@ Automated unit tests are provided to ensure the reliability of core functionalit
     ```bash
     pytest -v
     ```
-    *(This assumes your test file is named, for example, `test_habits.py` and is discoverable by `pytest`)*.
+    *(This assumes your test file is named `test_project.py` or `test_habits.py` and is discoverable by `pytest`)*.
 
 ---
 
@@ -160,17 +145,16 @@ Automated unit tests are provided to ensure the reliability of core functionalit
 
 Habit-Tracker-App/
   - data/
-    - user_habits.db          # SQLite database file
+    - user_habits.db        # SQLite database file
   - .venv/                    # Virtual environment folder (if created)
   - analyse.py                # Functions for habit analysis
-  - counter.py                # Counter class for habit logicaction functions
-  -  main.py                   # Main application entry point (CLI)
-  -  preload_db.py             # Script for preloading sample data
-  -  test_habits.py            # Unit tests (example name)
-  -  README.md                 # This file
-  -  requirements.txt          # Python package dependencies
-
-
+  - counter.py                # Counter class for habit logic
+  - db.py                     # Database interaction functions
+  - main.py                   # Main application entry point (CLI)
+  - preload_db.py             # Script for preloading sample data
+  - test_project.py           # Unit tests (example using pytest)
+  - README.md                 # This file
+  - requirements.txt          # Python package dependencies
 
 ---
 
@@ -182,5 +166,3 @@ This application serves as a foundational habit tracker. Potential future enhanc
 * User authentication for multi-user support.
 * Reminder notifications.
 * Export/import functionality for habit data.
-
----
