@@ -1,7 +1,6 @@
-# counter.py
 import datetime
 import sqlite3
-from typing import List, Optional, Union # <-- Import Union for type hinting
+from typing import List, Optional, Union
 
 import db as database_module
 
@@ -104,7 +103,6 @@ class Counter:
         return dt.date()
 
     @staticmethod
-    # FIX 1: Updated type hint to accept date or datetime, solving the type error.
     def _get_week_start(dt: Union[datetime.datetime, datetime.date]) -> datetime.date:
         """Returns the date of Monday for the week of the given datetime or date."""
         current_date = dt if isinstance(dt, datetime.date) else dt.date()
@@ -139,7 +137,6 @@ class Counter:
                 if self._get_week_start(c) >= normalized_creation_week_start
             )))
             delta = datetime.timedelta(weeks=1)
-            # FIX 2: Reused the 'effective_today_week_start' variable here.
             min_acceptable_date = effective_today_week_start - delta
         else:
             return 0
@@ -149,7 +146,6 @@ class Counter:
 
         last_relevant_completion = None
         for period_start in reversed(all_unique_completion_periods):
-            # FIX 2: Reused the 'effective_today_week_start' variable here.
             check_against_period = effective_today_normalized if self.periodicity == "Daily" else effective_today_week_start
             if period_start <= check_against_period:
                 last_relevant_completion = period_start

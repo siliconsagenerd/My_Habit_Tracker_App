@@ -1,4 +1,3 @@
-# test_habits.py
 import pytest
 import sqlite3
 import datetime
@@ -7,8 +6,8 @@ from freezegun import freeze_time
 import db as database_module
 from counter import Counter, get_counter
 from analyse import (
-    calculate_longest_streak_for_habit, # Consistent name
-    calculate_current_streak_for_habit, # Consistent name
+    calculate_longest_streak_for_habit,
+    calculate_current_streak_for_habit,
     longest_streak_all_habits
 )
 
@@ -30,7 +29,6 @@ def test_create_habit_and_store(db_conn):
     assert loaded_counter is not None
     assert loaded_counter.name == "Test Habit"
     assert datetime.datetime.fromisoformat(loaded_counter.creation_date.isoformat()) == creation_ts
-
 
 def test_increment_habit_adds_to_counters_table(db_conn):
     counter = Counter("Exercise Daily", "Daily exercise routine", "Daily")
@@ -60,30 +58,27 @@ def test_delete_habit_removes_from_db(db_conn):
     cursor.execute("SELECT * FROM counters WHERE habit_id = ?", (habit_id_to_delete,))
     assert len(cursor.fetchall()) == 0
 
-
 @freeze_time("2024-06-05 12:00:00")
-def test_calculate_longest_streak_for_habit_logic(db_conn): # Renamed test for clarity
+def test_calculate_longest_streak_for_habit_logic(db_conn):
     counter = Counter("Daily Read", "Books", "Daily", creation_date=datetime.datetime(2024,6,1))
     counter.store(db_conn)
     counter.increment(db_conn, increment_time=datetime.datetime(2024, 6, 2, 10,0,0))
     counter.increment(db_conn, increment_time=datetime.datetime(2024, 6, 3, 10,0,0))
     counter.increment(db_conn, increment_time=datetime.datetime(2024, 6, 4, 10,0,0))
-    streak = calculate_longest_streak_for_habit(db_conn, "Daily Read") # Consistent name
+    streak = calculate_longest_streak_for_habit(db_conn, "Daily Read")
     assert streak == 3
 
 @freeze_time("2024-06-05 12:00:00")
-def test_calculate_current_streak_for_habit_logic(db_conn): # New test for current streak
+def test_calculate_current_streak_for_habit_logic(db_conn):
     counter = Counter("Daily Walk", "Walk", "Daily", creation_date=datetime.datetime(2024,6,1))
     counter.store(db_conn)
     counter.increment(db_conn, increment_time=datetime.datetime(2024, 6, 3, 10,0,0)) # Day before yesterday
     counter.increment(db_conn, increment_time=datetime.datetime(2024, 6, 4, 10,0,0)) # Yesterday
-    # Today (June 5th) not completed yet
-    streak = calculate_current_streak_for_habit(db_conn, "Daily Walk") # Consistent name
+    streak = calculate_current_streak_for_habit(db_conn, "Daily Walk")
     assert streak == 2
 
-
 @freeze_time("2024-06-05 12:00:00")
-def test_longest_streak_all_habits_logic(db_conn): # Renamed test for clarity
+def test_longest_streak_all_habits_logic(db_conn):
     habit1 = Counter("Bookworm", "Reading", "Daily", creation_date=datetime.datetime(2024,6,1))
     habit1.store(db_conn)
     habit1.increment(db_conn, increment_time=datetime.datetime(2024, 6, 2))

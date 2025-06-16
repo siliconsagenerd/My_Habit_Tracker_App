@@ -1,12 +1,9 @@
-# main.py
 import sqlite3
 import questionary
 import db as database_module
 from counter import Counter, get_counter
 import analyse
 
-
-# Main function that runs the CLI
 def cli():
     """Main function to run the Command Line Interface."""
     if not questionary.confirm("Hi User! Welcome to your Habit Tracking App! Wanna proceed?", qmark="👋").ask():
@@ -17,7 +14,6 @@ def cli():
     while not stop:
         db_conn = database_module.get_db()
 
-        # The main menu choice
         choice = questionary.select(
             "What do you want to do?",
             choices=["Create a New Habit", "Increment Habit", "Reset Habit",
@@ -25,8 +21,6 @@ def cli():
             qmark="❓"
         ).ask()
 
-        # --- FIX for "Cannot find reference 'ask' in 'None'" ---
-        # This check handles when the user presses Ctrl+C to exit.
         if choice is None:
             stop = True
             print("\nExiting application.")
@@ -34,8 +28,6 @@ def cli():
             continue
 
         try:
-            # --- FIX for "Unresolved reference" errors ---
-            # These function calls now work because the functions are defined below.
             if choice == "Create a New Habit":
                 create_habit(db_conn)
             elif choice == "Increment Habit":
@@ -48,7 +40,6 @@ def cli():
                 delete_habit_action(db_conn)
             elif choice == "Exit":
                 stop = True
-                # FIX for "Typo"
                 print("Happy Habiting! Goodbye!")
         except Exception as e:
             # A general catch-all for any other unexpected errors.
@@ -56,10 +47,6 @@ def cli():
         finally:
             if db_conn:
                 db_conn.close()
-
-
-# --- FIX for "Unresolved reference" errors ---
-# All the helper functions are now correctly defined at the top level of the module.
 
 def create_habit(db_conn: sqlite3.Connection):
     """Guides the user through creating a new habit."""
@@ -79,7 +66,6 @@ def create_habit(db_conn: sqlite3.Connection):
     new_counter = Counter(name.strip(), desc.strip(), per)
     new_counter.store(db_conn)
 
-
 def increment_habit(db_conn: sqlite3.Connection):
     """Guides the user through incrementing a habit."""
     habits = database_module.get_habits_list(db_conn)
@@ -93,7 +79,6 @@ def increment_habit(db_conn: sqlite3.Connection):
     counter = get_counter(db_conn, name)
     if counter:
         counter.increment(db_conn)
-
 
 def reset_habit(db_conn: sqlite3.Connection):
     """Guides the user through resetting a habit's progress."""
@@ -111,7 +96,6 @@ def reset_habit(db_conn: sqlite3.Connection):
             counter.reset(db_conn)
     else:
         print("Reset cancelled.")
-
 
 def analyse_habits_menu(db_conn: sqlite3.Connection):
     """Shows the analysis sub-menu."""
@@ -138,10 +122,9 @@ def analyse_habits_menu(db_conn: sqlite3.Connection):
                 current_s = habit.get_current_streak(db_conn)
                 longest_s = habit.get_longest_streak(db_conn)
                 print(f"- '{habit.name}' ({habit.periodicity}) | Current Streak: {current_s}, Longest: {longest_s}")
-    else:  # Handle other analysis choices
+    else:
         handle_specific_analysis(db_conn, analysis_choice)
     print("-----------------------\n")
-
 
 def handle_specific_analysis(db_conn: sqlite3.Connection, analysis_choice: str):
     """Handles the logic for the specific analysis choices to reduce repetition."""
@@ -160,7 +143,6 @@ def handle_specific_analysis(db_conn: sqlite3.Connection, analysis_choice: str):
         print(f"The overall longest streak among all habits is: {streak} period(s).")
         return
 
-    # Logic for single-habit analysis
     habits_list = database_module.get_habits_list(db_conn)
     if not habits_list: print("No habits exist."); return
 
@@ -172,7 +154,6 @@ def handle_specific_analysis(db_conn: sqlite3.Connection, analysis_choice: str):
         elif "Current streak" in analysis_choice:
             streak = analyse.calculate_current_streak_for_habit(db_conn, name)
             print(f"The current streak for '{name}' is: {streak} period(s).")
-
 
 def delete_habit_action(db_conn: sqlite3.Connection):
     """Guides the user through deleting a habit."""
@@ -190,7 +171,6 @@ def delete_habit_action(db_conn: sqlite3.Connection):
             counter.delete(db_conn)
     else:
         print("Deletion cancelled.")
-
 
 if __name__ == "__main__":
     cli()

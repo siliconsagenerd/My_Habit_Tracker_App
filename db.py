@@ -1,4 +1,3 @@
-# db.py
 import sqlite3
 import datetime
 import os
@@ -90,7 +89,6 @@ def add_increment_date_to_db(db: sqlite3.Connection, habit_id: int, increment_da
 def get_increment_dates_for_habit(db: sqlite3.Connection, habit_id: int) -> List[datetime.datetime]:
     """Fetches all completion timestamps for a specific habit, sorted chronologically."""
     cursor = db.cursor()
-    # FIX: Removed the redundant 'ASC' from the ORDER BY clause.
     cursor.execute("SELECT increment_date FROM counters WHERE habit_id = ? ORDER BY increment_date", (habit_id,))
     return [datetime.datetime.fromisoformat(row['increment_date']) for row in cursor.fetchall()]
 
@@ -100,8 +98,6 @@ def reset_increments_for_habit(db: sqlite3.Connection, habit_id: int):
     cursor.execute("DELETE FROM counters WHERE habit_id = ?", (habit_id,))
     db.commit()
 
-# FIX: Replaced the global variable with a self-contained 'with' block.
-# This eliminates all the "Shadows name 'conn' from outer scope" warnings.
 def initialize_database():
     """Ensures the database and its tables are created upon first import."""
     try:
@@ -110,7 +106,6 @@ def initialize_database():
             create_tables_if_not_exist(conn)
     except sqlite3.Error as e:
         print(f"Fatal database error on initialization: {e}")
-        # Depending on the app's needs, you might want to exit or handle this more gracefully.
 
 # Run initialization when this module is first imported.
 initialize_database()

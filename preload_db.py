@@ -2,7 +2,6 @@ import db as database_module
 import datetime
 import random
 
-
 def run_preload():
     """Preloads the database with predefined habits and sample completion data."""
     db_conn = database_module.get_db()
