@@ -64,6 +64,8 @@ Habit-Tracker-App/
 ├── .gitignore              # Specifies files for Git to ignore
 └── README.md               # This file
 
+---
+
 ## ⚙️ Installation and Setup
 
 Follow these steps to get the application running on your local machine.
@@ -117,6 +119,7 @@ python preload_db.py
 ```
 ##### Warning:This will delete all your current habits and progress!
 
+---
 
 ## 🧪 Testing
 Automated unit tests ensure reliability, especially for streak logic.
