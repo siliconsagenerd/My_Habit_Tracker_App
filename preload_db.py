@@ -20,7 +20,6 @@ def run_preload():
     Ensures a completely fresh start by deleting the old database file,
     creating new tables, and then preloading it with 5 habits and 30 days of sample data.
     """
-    # Force deletion of the old database file to ensure a clean slate
     db_path = os.path.join("data", "user_habits.db")
     if os.path.exists(db_path):
         try:
@@ -32,36 +31,33 @@ def run_preload():
 
     db_conn = None
     try:
-        # Get a connection to the new, empty database
         db_conn = database_module.get_db()
         print("Database connection successful. Starting preload...")
 
-        # --- THIS IS THE FIX ---
-        # Explicitly create the tables in the new empty database
         database_module.create_tables_if_not_exist(db_conn)
         print("Tables created successfully.")
-        # ----------------------
 
         today = datetime.date.today()
-        # Set a fixed creation date for consistency in testing
-        creation_date = today - datetime.timedelta(days=35)
+
+        # --- THIS IS THE FIX ---
+        # 1. Create a date object as before
+        creation_date_only = today - datetime.timedelta(days=35)
+        # 2. Convert the date object into a datetime object by adding a time component (midnight)
+        creation_datetime = datetime.datetime.combine(creation_date_only, datetime.time(0, 0))
+        # ----------------------
 
         for name, (desc, period) in PREDEFINED_HABITS.items():
             try:
-                # Add the habit to the newly created table
-                database_module.add_habit_to_db(db_conn, name, desc, period, creation_date)
+                # 3. Use the new datetime object when adding to the database
+                database_module.add_habit_to_db(db_conn, name, desc, period, creation_datetime)
                 habit_id = database_module.get_habit_id_by_name(db_conn, name)
                 print(f"Created habit: '{name}'")
 
-                # Generate sample completion data for the last 30 days
                 if habit_id:
                     completions = 0
                     for i in range(30):
                         day_to_check = today - datetime.timedelta(days=i)
-
-                        # Use randomness to create a realistic dataset with some broken streaks
                         chance = 0.8 if period == "Daily" else 0.7
-
                         if random.random() < chance:
                             completion_time = datetime.datetime.combine(day_to_check,
                                                                         datetime.time(random.randint(9, 20)))

@@ -132,4 +132,4 @@ python -m pytest
 ```bash
 python -m pytest -v
 ``` 
-<hr></hr>
+<hr>
