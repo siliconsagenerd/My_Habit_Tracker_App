@@ -1,69 +1,87 @@
-import db as database_module
+import sqlite3
 import datetime
 import random
+import os
+
+import db as database_module
+
+# The 5 predefined habits from your original project
+PREDEFINED_HABITS = {
+    "Study Daily": ("Dedicated study session for courses.", "Daily"),
+    "Read Daily": ("Read at least one chapter of a book.", "Daily"),
+    "Daily Workout": ("Minimum 30 minutes of physical activity.", "Daily"),
+    "Weekly Project Review": ("Review progress and plan for the next week.", "Weekly"),
+    "Grocery Shopping": ("Weekly trip to buy groceries.", "Weekly")
+}
+
 
 def run_preload():
-    """Preloads the database with predefined habits and sample completion data."""
-    db_conn = database_module.get_db()
+    """
+    Ensures a completely fresh start by deleting the old database file,
+    creating new tables, and then preloading it with 5 habits and 30 days of sample data.
+    """
+    # Force deletion of the old database file to ensure a clean slate
+    db_path = os.path.join("data", "user_habits.db")
+    if os.path.exists(db_path):
+        try:
+            os.remove(db_path)
+            print(f"Successfully deleted old database file at: {db_path}")
+        except OSError as e:
+            print(f"Error deleting file {db_path}: {e}")
+            return
 
-    habits_data = {
-        "Study Daily": ("Dedicated study session for courses.", "Daily",
-                        ["2023-07-01", "2023-07-02", "2023-07-03", "2023-07-04", "2023-07-05", "2023-07-06",
-                         "2023-07-07",
-                         "2023-07-08", "2023-07-09", "2023-07-10", "2023-07-11", "2023-07-12", "2023-07-13",
-                         "2023-07-14",
-                         "2023-07-15", "2023-07-16", "2023-07-17", "2023-07-18", "2023-07-19", "2023-07-20",
-                         "2023-07-21",
-                         "2023-07-22", "2023-07-23", "2023-07-24", "2023-07-25", "2023-07-26", "2023-07-27",
-                         "2023-07-28",
-                         "2023-07-29", "2023-07-30", "2023-07-31"]),
-        "Read Daily": ("Read at least one chapter of a book.", "Daily",
-                       ["2023-07-01", "2023-07-02", "2023-07-03", "2023-07-05", "2023-07-06", "2023-07-07",
-                        "2023-07-08",
-                        "2023-07-09", "2023-07-10", "2023-07-11", "2023-07-12", "2023-07-14", "2023-07-15",
-                        "2023-07-16",
-                        "2023-07-17", "2023-07-18", "2023-07-19", "2023-07-20", "2023-07-21", "2023-07-22",
-                        "2023-07-23",
-                        "2023-07-25", "2023-07-26", "2023-07-27", "2023-07-28", "2023-07-29", "2023-07-30",
-                        "2023-07-31"]),
-        "Daily Workout": ("Minimum 30 minutes of physical activity.", "Daily",
-                          ["2023-07-01", "2023-07-03", "2023-07-05", "2023-07-07", "2023-07-09", "2023-07-11",
-                           "2023-07-13",
-                           "2023-07-15", "2023-07-17", "2023-07-19", "2023-07-21", "2023-07-23", "2023-07-25",
-                           "2023-07-27",
-                           "2023-07-29", "2023-07-31"]),
-        "Weekly Project Review": ("Review progress and plan for the next week.", "Weekly",
-                                  ["2023-07-02", "2023-07-09", "2023-07-16", "2023-07-23", "2023-07-30"]),
-        "Grocery Shopping": ("Weekly trip to buy groceries.", "Weekly",
-                             ["2023-07-01", "2023-07-08", "2023-07-15", "2023-07-22", "2023-07-29"])
-    }
-    creation_date = datetime.datetime(2023, 6, 15, 12, 0, 0)
+    db_conn = None
+    try:
+        # Get a connection to the new, empty database
+        db_conn = database_module.get_db()
+        print("Database connection successful. Starting preload...")
 
-    for name, (desc, period, dates) in habits_data.items():
-        habit_id = database_module.get_habit_id_by_name(db_conn, name)
-        if not habit_id:
+        # --- THIS IS THE FIX ---
+        # Explicitly create the tables in the new empty database
+        database_module.create_tables_if_not_exist(db_conn)
+        print("Tables created successfully.")
+        # ----------------------
+
+        today = datetime.date.today()
+        # Set a fixed creation date for consistency in testing
+        creation_date = today - datetime.timedelta(days=35)
+
+        for name, (desc, period) in PREDEFINED_HABITS.items():
             try:
+                # Add the habit to the newly created table
                 database_module.add_habit_to_db(db_conn, name, desc, period, creation_date)
                 habit_id = database_module.get_habit_id_by_name(db_conn, name)
-                print(f"Created habit: {name}")
+                print(f"Created habit: '{name}'")
+
+                # Generate sample completion data for the last 30 days
+                if habit_id:
+                    completions = 0
+                    for i in range(30):
+                        day_to_check = today - datetime.timedelta(days=i)
+
+                        # Use randomness to create a realistic dataset with some broken streaks
+                        chance = 0.8 if period == "Daily" else 0.7
+
+                        if random.random() < chance:
+                            completion_time = datetime.datetime.combine(day_to_check,
+                                                                        datetime.time(random.randint(9, 20)))
+                            database_module.add_increment_date_to_db(db_conn, habit_id, completion_time)
+                            completions += 1
+                    print(f"-> Processed {completions} sample increments for '{name}'.")
             except Exception as e:
-                print(f"Error creating '{name}': {e}");
+                print(f"Error processing '{name}': {e}")
                 continue
 
-        # This part adds increments even if the habit already existed.
-        # For a true "preload once", you might clear old increments first.
-        for date_str in dates:
-            completion_time = datetime.datetime.strptime(date_str, "%Y-%m-%d").replace(
-                hour=random.randint(9, 17), minute=random.randint(0, 59)
-            )
-            database_module.add_increment_date_to_db(db_conn, habit_id, completion_time)
-        print(f"Processed increments for '{name}'.")
-
-    db_conn.close()
-    print("\nPreload process completed.")
+    except sqlite3.Error as e:
+        print(f"A database error occurred: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+    finally:
+        if db_conn:
+            db_conn.close()
+            print("\nDatabase connection closed. Preload process completed.")
 
 
-# This ensures the script only runs when executed directly, not when imported.
 if __name__ == "__main__":
     print("Starting database preload script...")
     run_preload()

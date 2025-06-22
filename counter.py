@@ -13,10 +13,8 @@ class Counter:
 
         if not name or not isinstance(name, str) or len(name.strip()) == 0:
             raise ValueError("Name cannot be empty and must be a string")
-        # Allow empty description
         if not isinstance(description, str):
             raise ValueError("Description must be a string")
-
         if periodicity not in ['Daily', 'Weekly']:
             raise ValueError("Periodicity must be 'Daily' or 'Weekly'.")
 
@@ -31,7 +29,6 @@ class Counter:
         """Stores the new habit definition in the database."""
         if not db:
             raise ValueError("Database connection is required")
-
         try:
             database_module.add_habit_to_db(db, self.name, self.description, self.periodicity, self.creation_date)
             self.habit_id = database_module.get_habit_id_by_name(db, self.name)
@@ -47,12 +44,10 @@ class Counter:
         """Records a completion for the habit."""
         if not db:
             raise ValueError("Database connection is required")
-
         if not self.habit_id:
             self.habit_id = database_module.get_habit_id_by_name(db, self.name)
             if not self.habit_id:
                 raise ValueError(f"Cannot increment habit '{self.name}'. Please ensure it is stored correctly.")
-
         actual_increment_time = (increment_time or datetime.datetime.now()).replace(microsecond=0)
         database_module.add_increment_date_to_db(db, self.habit_id, actual_increment_time)
         self._increment_dates.append(actual_increment_time)
@@ -62,12 +57,10 @@ class Counter:
         """Resets all completion records for this habit."""
         if not db:
             raise ValueError("Database connection is required")
-
         if not self.habit_id:
             self.habit_id = database_module.get_habit_id_by_name(db, self.name)
             if not self.habit_id:
                 raise ValueError(f"Cannot reset habit '{self.name}': ID unknown.")
-
         database_module.reset_increments_for_habit(db, self.habit_id)
         self._increment_dates = []
         print(f"All increments for habit '{self.name}' have been reset.")
@@ -76,12 +69,10 @@ class Counter:
         """Deletes the habit and all its data from the database."""
         if not db:
             raise ValueError("Database connection is required")
-
         if not self.habit_id:
             self.habit_id = database_module.get_habit_id_by_name(db, self.name)
             if not self.habit_id:
                 raise ValueError(f"Cannot delete habit '{self.name}': ID unknown.")
-
         database_module.delete_habit_from_db(db, self.habit_id)
         print(f"Habit '{self.name}' and all its data deleted.")
 
@@ -89,7 +80,6 @@ class Counter:
         """Loads or refreshes completion dates from the DB into the object's internal cache."""
         if not db:
             raise ValueError("Database connection is required")
-
         if not self.habit_id:
             self.habit_id = database_module.get_habit_id_by_name(db, self.name)
         if self.habit_id:
@@ -110,7 +100,10 @@ class Counter:
 
     def get_current_streak(self, db_conn: sqlite3.Connection,
                            current_system_date: Optional[datetime.datetime] = None) -> int:
-        """Calculates the current streak, defined as a consecutive sequence ending on or just before 'today'."""
+        """
+        Calculates the current streak, defined as a consecutive sequence of completions ending today or yesterday.
+        This logic is complex because it must handle both daily and weekly periodicities correctly.
+        """
         if not db_conn:
             raise ValueError("Database connection is required")
 
@@ -119,25 +112,28 @@ class Counter:
             return 0
 
         effective_system_dt = current_system_date or datetime.datetime.now()
-        effective_today_normalized = self._get_normalized_date(effective_system_dt)
         normalized_creation_date = self._get_normalized_date(self.creation_date)
 
+        # FIX: Define the 'check_against_period' variable within each branch
         if self.periodicity == "Daily":
             all_unique_completion_periods = sorted(list(set(
                 self._get_normalized_date(c) for c in self._increment_dates
                 if self._get_normalized_date(c) >= normalized_creation_date
             )))
             delta = datetime.timedelta(days=1)
+            effective_today_normalized = self._get_normalized_date(effective_system_dt)
             min_acceptable_date = effective_today_normalized - delta
+            check_against_period = effective_today_normalized # Set the variable for daily check
         elif self.periodicity == "Weekly":
-            effective_today_week_start = self._get_week_start(effective_system_dt)
             normalized_creation_week_start = self._get_week_start(self.creation_date)
             all_unique_completion_periods = sorted(list(set(
                 self._get_week_start(c) for c in self._increment_dates
                 if self._get_week_start(c) >= normalized_creation_week_start
             )))
             delta = datetime.timedelta(weeks=1)
+            effective_today_week_start = self._get_week_start(effective_system_dt)
             min_acceptable_date = effective_today_week_start - delta
+            check_against_period = effective_today_week_start # Set the variable for weekly check
         else:
             return 0
 
@@ -146,7 +142,7 @@ class Counter:
 
         last_relevant_completion = None
         for period_start in reversed(all_unique_completion_periods):
-            check_against_period = effective_today_normalized if self.periodicity == "Daily" else effective_today_week_start
+            # FIX: Use the 'check_against_period' variable which is now guaranteed to be defined
             if period_start <= check_against_period:
                 last_relevant_completion = period_start
                 break
@@ -156,18 +152,22 @@ class Counter:
 
         current_streak = 0
         expected_period = last_relevant_completion
-        start_index = all_unique_completion_periods.index(last_relevant_completion)
-
-        for i in range(start_index, -1, -1):
-            if all_unique_completion_periods[i] == expected_period:
-                current_streak += 1
-                expected_period -= delta
-            else:
-                break
+        try:
+            start_index = all_unique_completion_periods.index(last_relevant_completion)
+            for i in range(start_index, -1, -1):
+                if all_unique_completion_periods[i] == expected_period:
+                    current_streak += 1
+                    expected_period -= delta
+                else:
+                    break
+        except ValueError:
+            return 0
         return current_streak
 
     def get_longest_streak(self, db_conn: sqlite3.Connection) -> int:
-        """Calculates the longest streak ever achieved for the habit."""
+        """
+        Calculates the longest streak ever achieved for the habit by iterating through all completions.
+        """
         if not db_conn:
             raise ValueError("Database connection is required")
 
