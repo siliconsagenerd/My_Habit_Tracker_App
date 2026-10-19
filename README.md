@@ -5,6 +5,14 @@
 
 ---
 
+## 📌 About
+
+**Habit Tracker** is a command-line application for tracking daily and weekly habits with automatic streak calculation. Built with Python and SQLite, featuring an interactive CLI powered by `questionary`. This project demonstrates object-oriented and functional programming principles, with a clean architecture separating concerns across multiple modules. The application includes comprehensive unit tests with pytest and supports data persistence with automatic streak analytics.
+
+**Topics:** python, sqlite3, object-oriented-programming, functional-programming, cli, questionary, pytest, habit-tracking, streak-calculation, data-persistence, iubh
+
+---
+
 ## 🚀 Overview
 
 A command-line application for tracking daily and weekly habits. Built with Python and SQLite, featuring an interactive CLI (via `questionary`).
